@@ -30,63 +30,63 @@ namespace CuteLogger
 
 	class Logger;
 	CUTELOGGERSHARED_EXPORT Logger* cuteLoggerInstance();
-#define cuteLogger cuteLoggerInstance()
 
+#define cuteLogger CuteLogger::cuteLoggerInstance()
 
-#define LOG_TRACE            CuteMessageLogger(cuteLoggerInstance(), Logger::Trace,   __FILE__, __LINE__, Q_FUNC_INFO).write
-#define LOG_DEBUG            CuteMessageLogger(cuteLoggerInstance(), Logger::Debug,   __FILE__, __LINE__, Q_FUNC_INFO).write
-#define LOG_INFO             CuteMessageLogger(cuteLoggerInstance(), Logger::Info,    __FILE__, __LINE__, Q_FUNC_INFO).write
-#define LOG_WARNING          CuteMessageLogger(cuteLoggerInstance(), Logger::Warning, __FILE__, __LINE__, Q_FUNC_INFO).write
-#define LOG_ERROR            CuteMessageLogger(cuteLoggerInstance(), Logger::Error,   __FILE__, __LINE__, Q_FUNC_INFO).write
-#define LOG_FATAL            CuteMessageLogger(cuteLoggerInstance(), Logger::Fatal,   __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_TRACE            CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Trace,   __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_DEBUG            CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Debug,   __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_INFO             CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Info,    __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_WARNING          CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Warning, __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_ERROR            CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Error,   __FILE__, __LINE__, Q_FUNC_INFO).write
+#define LOG_FATAL            CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Fatal,   __FILE__, __LINE__, Q_FUNC_INFO).write
 
-#define LOG_CTRACE(category)   CuteMessageLogger(cuteLoggerInstance(), Logger::Trace,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
-#define LOG_CDEBUG(category)   CuteMessageLogger(cuteLoggerInstance(), Logger::Debug,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
-#define LOG_CINFO(category)    CuteMessageLogger(cuteLoggerInstance(), Logger::Info,    __FILE__, __LINE__, Q_FUNC_INFO, category).write()
-#define LOG_CWARNING(category) CuteMessageLogger(cuteLoggerInstance(), Logger::Warning, __FILE__, __LINE__, Q_FUNC_INFO, category).write()
-#define LOG_CERROR(category)   CuteMessageLogger(cuteLoggerInstance(), Logger::Error,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
-#define LOG_CFATAL(category)   CuteMessageLogger(cuteLoggerInstance(), Logger::Fatal,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CTRACE(category)   CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Trace,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CDEBUG(category)   CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Debug,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CINFO(category)    CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Info,    __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CWARNING(category) CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Warning, __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CERROR(category)   CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Error,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
+#define LOG_CFATAL(category)   CuteLogger::CuteMessageLogger(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Fatal,   __FILE__, __LINE__, Q_FUNC_INFO, category).write()
 
-#define LOG_TRACE_TIME  LoggerTimingHelper loggerTimingHelper(cuteLoggerInstance(), Logger::Trace, __FILE__, __LINE__, Q_FUNC_INFO); loggerTimingHelper.start
-#define LOG_DEBUG_TIME  LoggerTimingHelper loggerTimingHelper(cuteLoggerInstance(), Logger::Debug, __FILE__, __LINE__, Q_FUNC_INFO); loggerTimingHelper.start
-#define LOG_INFO_TIME   LoggerTimingHelper loggerTimingHelper(cuteLoggerInstance(), Logger::Info,  __FILE__, __LINE__, Q_FUNC_INFO); loggerTimingHelper.start
+#define LOG_TRACE_TIME  CuteLogger::LoggerTimingHelper CuteLogger::loggerTimingHelper(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Trace, __FILE__, __LINE__, Q_FUNC_INFO); CuteLogger::loggerTimingHelper.start
+#define LOG_DEBUG_TIME  CuteLogger::LoggerTimingHelper CuteLogger::loggerTimingHelper(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Debug, __FILE__, __LINE__, Q_FUNC_INFO); CuteLogger::loggerTimingHelper.start
+#define LOG_INFO_TIME   CuteLogger::LoggerTimingHelper CuteLogger::loggerTimingHelper(CuteLogger::cuteLoggerInstance(), CuteLogger::Logger::Info,  __FILE__, __LINE__, Q_FUNC_INFO); CuteLogger::loggerTimingHelper.start
 
-#define LOG_ASSERT(cond)        ((!(cond)) ? cuteLoggerInstance()->writeAssert(__FILE__, __LINE__, Q_FUNC_INFO, #cond) : qt_noop())
-#define LOG_ASSERT_X(cond, msg) ((!(cond)) ? cuteLoggerInstance()->writeAssert(__FILE__, __LINE__, Q_FUNC_INFO, msg) : qt_noop())
+#define LOG_ASSERT(cond)        ((!(cond)) ? CuteLogger::cuteLoggerInstance()->writeAssert(__FILE__, __LINE__, Q_FUNC_INFO, #cond) : qt_noop())
+#define LOG_ASSERT_X(cond, msg) ((!(cond)) ? CuteLogger::cuteLoggerInstance()->writeAssert(__FILE__, __LINE__, Q_FUNC_INFO, msg) : qt_noop())
 
-#if (__cplusplus >= 201103L)
-#include <functional>
+	//#if (__cplusplus >= 201103L)
+	//#include <functional>
+	//
+	//#define LOG_CATEGORY(category) \
+	//  CuteLogger::Logger customCuteLoggerInstance{category};\
+	//  std::function<CuteLogger::Logger*()> cuteLoggerInstance = [&customCuteLoggerInstance]() {\
+	//    return &customCuteLoggerInstance;\
+	//  };\
+	//
+	//#define LOG_GLOBAL_CATEGORY(category) \
+	//  CuteLogger::Logger customCuteLoggerInstance{category, true};\
+	//  std::function<CuteLogger::Logger*()> cuteLoggerInstance = [&customCuteLoggerInstance]() {\
+	//    return &customCuteLoggerInstance;\
+	//  };\
+	//
+	//#else
 
 #define LOG_CATEGORY(category) \
-  Logger customCuteLoggerInstance{category};\
-  std::function<Logger*()> cuteLoggerInstance = [&customCuteLoggerInstance]() {\
-    return &customCuteLoggerInstance;\
-  };\
-
-#define LOG_GLOBAL_CATEGORY(category) \
-  Logger customCuteLoggerInstance{category, true};\
-  std::function<Logger*()> cuteLoggerInstance = [&customCuteLoggerInstance]() {\
-    return &customCuteLoggerInstance;\
-  };\
-
-#else
-
-#define LOG_CATEGORY(category) \
-    Logger* cuteLoggerInstance()\
+    CuteLogger::Logger* cuteLoggerInstance()\
     {\
-      static Logger customCuteLoggerInstance(category);\
+      static CuteLogger::Logger customCuteLoggerInstance(category);\
       return &customCuteLoggerInstance;\
     }\
 
 #define LOG_GLOBAL_CATEGORY(category) \
-    Logger* cuteLoggerInstance()\
+    CuteLogger::Logger* cuteLoggerInstance()\
     {\
-      static Logger customCuteLoggerInstance(category);\
+      static CuteLogger::Logger customCuteLoggerInstance(category);\
       customCuteLoggerInstance.logToGlobalInstance(category, true);\
       return &customCuteLoggerInstance;\
     }\
 
-#endif
+//#endif
 
 
 	class LoggerPrivate;

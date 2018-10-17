@@ -47,5 +47,3 @@ CMakeLists.txt.user
 *.user
 debug/
 release/
-*.sln
-*.vcxproj

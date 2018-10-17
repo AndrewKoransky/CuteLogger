@@ -22,26 +22,29 @@
 #include <QFile>
 #include <QTextStream>
 
-
-class CUTELOGGERSHARED_EXPORT FileAppender : public AbstractStringAppender
+namespace CuteLogger
 {
-  public:
-    FileAppender(const QString& fileName = QString());
-    ~FileAppender();
 
-    QString fileName() const;
-    void setFileName(const QString&);
+	class CUTELOGGERSHARED_EXPORT FileAppender : public AbstractStringAppender
+	{
+	public:
+		FileAppender(const QString& fileName = QString());
+		~FileAppender();
 
-  protected:
-    virtual void append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,
-                        const char* function, const QString& category, const QString& message);
-    bool openFile();
-    void closeFile();
+		QString fileName() const;
+		void setFileName(const QString&);
 
-  private:
-    QFile m_logFile;
-    QTextStream m_logStream;
-    mutable QMutex m_logFileMutex;
-};
+	protected:
+		virtual void append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,
+			const char* function, const QString& category, const QString& message);
+		bool openFile();
+		void closeFile();
 
+	private:
+		QFile m_logFile;
+		QTextStream m_logStream;
+		mutable QMutex m_logFileMutex;
+	};
+
+}
 #endif // FILEAPPENDER_H

@@ -32,6 +32,8 @@
 // STL
 #include <iostream>
 
+namespace CuteLogger
+{
 
 /**
  * \file Logger.h
@@ -1171,4 +1173,6 @@ void CuteMessageLogger::write(const QString& msg) const
 QDebug CuteMessageLogger::write() const
 {
   return m_l->write(m_level, m_file, m_line, m_function, m_category);
+}
+
 }

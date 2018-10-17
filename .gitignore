@@ -40,3 +40,12 @@ doc/
 *.pro.user
 *.pro.user.*
 CMakeLists.txt.user
+
+# Visual Studio generated
+.vs/
+*.filters
+*.user
+debug/
+release/
+*.sln
+*.vcxproj

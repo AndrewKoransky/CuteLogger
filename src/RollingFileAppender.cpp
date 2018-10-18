@@ -12,7 +12,6 @@ namespace CuteLogger
 		m_logFilesLimit(0)
 	{}
 
-
 	void RollingFileAppender::append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,
 		const char* function, const QString& category, const QString& message)
 	{
@@ -147,6 +146,10 @@ namespace CuteLogger
 		Q_ASSERT_X(!m_datePatternString.isEmpty(), "DailyRollingFileAppender::computeRollOverTime()", "No active date pattern");
 
 		QDateTime now = QDateTime::currentDateTime();
+		if ((m_computeRollOverBasedOnLastModified) && (!fileName().isEmpty())) {
+			QFileInfo fi(fileName());
+			now = fi.lastModified();
+		}
 		QDate nowDate = now.date();
 		QTime nowTime = now.time();
 		QDateTime start;
@@ -247,6 +250,22 @@ namespace CuteLogger
 	{
 		QMutexLocker locker(&m_rollingMutex);
 		return m_logFilesLimit;
+	}
+
+	void RollingFileAppender::setFileName(const QString & f)
+	{
+		FileAppender::setFileName(f);
+		computeRollOverTime();
+	}
+
+	bool RollingFileAppender::computeRollOverBasedOnLastModified() const
+	{
+		return m_computeRollOverBasedOnLastModified;
+	}
+
+	void RollingFileAppender::setComputeRollOverBasedOnLastModified(bool val)
+	{
+		m_computeRollOverBasedOnLastModified = val;
 	}
 
 }

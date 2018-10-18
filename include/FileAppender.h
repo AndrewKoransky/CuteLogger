@@ -32,7 +32,7 @@ namespace CuteLogger
 		~FileAppender();
 
 		QString fileName() const;
-		void setFileName(const QString&);
+		virtual void setFileName(const QString&);
 
 	protected:
 		virtual void append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,

@@ -9,14 +9,17 @@ namespace CuteLogger
 
 	RollingFileAppender::RollingFileAppender(const QString& fileName)
 		: FileAppender(fileName),
-		m_logFilesLimit(0)
+		m_logFilesLimit(0),
+		m_computeRollOverBasedOnLastModified(false),
+		m_forceRollovercheck(true)
 	{}
 
 	void RollingFileAppender::append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,
 		const char* function, const QString& category, const QString& message)
 	{
-		if (!m_rollOverTime.isNull() && QDateTime::currentDateTime() > m_rollOverTime)
-			rollOver();
+		if ((QDateTime::currentDateTime() >= m_rollOverTime) || (m_forceRollovercheck)) {
+			rollOverCheck();
+		}
 
 		FileAppender::append(timeStamp, logLevel, file, line, function, category, message);
 	}
@@ -66,7 +69,7 @@ namespace CuteLogger
 		QMutexLocker locker(&m_rollingMutex);
 		m_frequency = datePattern;
 
-		computeRollOverTime();
+		computeLogAndRollOverTimes();
 	}
 
 
@@ -75,7 +78,7 @@ namespace CuteLogger
 		setDatePatternString(datePattern);
 		computeFrequency();
 
-		computeRollOverTime();
+		computeLogAndRollOverTimes();
 	}
 
 
@@ -139,94 +142,122 @@ namespace CuteLogger
 		for (int i = 0; i < fileDateNames.length() - m_logFilesLimit + 1; ++i)
 			QFile::remove(fileDateNames[i]);
 	}
-
-
-	void RollingFileAppender::computeRollOverTime()
+	
+	QDateTime RollingFileAppender::computeFileLogTime() const
 	{
-		Q_ASSERT_X(!m_datePatternString.isEmpty(), "DailyRollingFileAppender::computeRollOverTime()", "No active date pattern");
-
-		QDateTime now = QDateTime::currentDateTime();
+		QDateTime dt = QDateTime::currentDateTime();
 		if ((m_computeRollOverBasedOnLastModified) && (!fileName().isEmpty())) {
 			QFileInfo fi(fileName());
-			now = fi.lastModified();
+			if (fi.exists()) {
+				dt = fi.lastModified();
+			}
 		}
-		QDate nowDate = now.date();
-		QTime nowTime = now.time();
-		QDateTime start;
+		return computeRollOverDateTimeHelper(dt, false);
+	}
 
+	QDateTime RollingFileAppender::computeCurrentLogTimeNow() const
+	{
+		return computeRollOverDateTimeHelper(QDateTime::currentDateTime(), false);
+	}
+
+	QDateTime RollingFileAppender::computeRollOverDateTimeNext() const
+	{
+		return computeRollOverDateTimeHelper(QDateTime::currentDateTime(), true);
+	}
+
+	QDateTime RollingFileAppender::computeRollOverDateTimeHelper(const QDateTime& dt, bool bNext) const 
+	{
+		QDate rcDate = dt.date();
+		QTime rcTime = dt.time();
+		QDateTime rc;
 		switch (m_frequency)
 		{
 		case MinutelyRollover:
 		{
-			start = QDateTime(nowDate, QTime(nowTime.hour(), nowTime.minute(), 0, 0));
-			m_rollOverTime = start.addSecs(60);
+			rc = QDateTime(rcDate, QTime(rcTime.hour(), rcTime.minute(), 0, 0));
+			if (bNext) {
+				rc = rc.addSecs(60);
+			}
 		}
 		break;
 		case HourlyRollover:
 		{
-			start = QDateTime(nowDate, QTime(nowTime.hour(), 0, 0, 0));
-			m_rollOverTime = start.addSecs(60 * 60);
+			rc = QDateTime(rcDate, QTime(rcTime.hour(), 0, 0, 0));
+			if (bNext) {
+				rc = rc.addSecs(60 * 60);
+			}
 		}
 		break;
 		case HalfDailyRollover:
 		{
-			int hour = nowTime.hour();
+			int hour = rcTime.hour();
 			if (hour >= 12)
 				hour = 12;
 			else
 				hour = 0;
-			start = QDateTime(nowDate, QTime(hour, 0, 0, 0));
-			m_rollOverTime = start.addSecs(60 * 60 * 12);
+			rc = QDateTime(rcDate, QTime(hour, 0, 0, 0));
+			if (bNext) {
+				rc = rc.addSecs(60 * 60 * 12);
+			}
 		}
 		break;
 		case DailyRollover:
 		{
-			start = QDateTime(nowDate, QTime(0, 0, 0, 0));
-			m_rollOverTime = start.addDays(1);
+			rc = QDateTime(rcDate, QTime(0, 0, 0, 0));
+			if (bNext) {
+				rc = rc.addDays(1);
+			}
 		}
 		break;
 		case WeeklyRollover:
 		{
 			// Qt numbers the week days 1..7. The week starts on Monday.
 			// Change it to being numbered 0..6, starting with Sunday.
-			int day = nowDate.dayOfWeek();
+			int day = rcDate.dayOfWeek();
 			if (day == Qt::Sunday)
 				day = 0;
-			start = QDateTime(nowDate, QTime(0, 0, 0, 0)).addDays(-1 * day);
-			m_rollOverTime = start.addDays(7);
+			rc = QDateTime(rcDate, QTime(0, 0, 0, 0)).addDays(-1 * day);
+			if (bNext) {
+				rc = rc.addDays(7);
+			}
 		}
 		break;
 		case MonthlyRollover:
 		{
-			start = QDateTime(QDate(nowDate.year(), nowDate.month(), 1), QTime(0, 0, 0, 0));
-			m_rollOverTime = start.addMonths(1);
+			rc = QDateTime(QDate(rcDate.year(), rcDate.month(), 1), QTime(0, 0, 0, 0));
+			if (bNext) {
+				rc = rc.addMonths(1);
+			}
 		}
 		break;
 		default:
+			rc = QDateTime::fromTime_t(0);
 			Q_ASSERT_X(false, "DailyRollingFileAppender::computeInterval()", "Invalid datePattern constant");
-			m_rollOverTime = QDateTime::fromTime_t(0);
 		}
 
-		m_rollOverSuffix = start.toString(m_datePatternString);
-		Q_ASSERT_X(now.toString(m_datePatternString) == m_rollOverSuffix,
-			"DailyRollingFileAppender::computeRollOverTime()", "File name changes within interval");
-		Q_ASSERT_X(m_rollOverSuffix != m_rollOverTime.toString(m_datePatternString),
-			"DailyRollingFileAppender::computeRollOverTime()", "File name does not change with rollover");
+		return rc;
 	}
 
+	void RollingFileAppender::computeLogAndRollOverTimes()
+	{
+		Q_ASSERT_X(!m_datePatternString.isEmpty(), "DailyRollingFileAppender::computeRollOverTime()", "No active date pattern");
 
-	void RollingFileAppender::rollOver()
+		m_currentLogFileTime = computeFileLogTime();
+		m_rollOverTime = computeRollOverDateTimeNext();
+	}
+
+	void RollingFileAppender::rollOverCheck()
 	{
 		Q_ASSERT_X(!m_datePatternString.isEmpty(), "DailyRollingFileAppender::rollOver()", "No active date pattern");
 
-		QString rollOverSuffix = m_rollOverSuffix;
-		computeRollOverTime();
-		if (rollOverSuffix == m_rollOverSuffix)
+		QString suffixCurrentLogFile = m_currentLogFileTime.toString(m_datePatternString);
+		QString suffixNow = computeCurrentLogTimeNow().toString(m_datePatternString);
+		if (suffixCurrentLogFile == suffixNow)
 			return;
 
 		closeFile();
 
-		QString targetFileName = fileName() + rollOverSuffix;
+		QString targetFileName = fileName() + suffixCurrentLogFile;
 		QFile f(targetFileName);
 		if (f.exists() && !f.remove())
 			return;
@@ -236,8 +267,9 @@ namespace CuteLogger
 
 		openFile();
 		removeOldFiles();
-	}
 
+		m_forceRollovercheck = false;
+	}
 
 	void RollingFileAppender::setLogFilesLimit(int limit)
 	{
@@ -255,8 +287,9 @@ namespace CuteLogger
 	void RollingFileAppender::setFileName(const QString & f)
 	{
 		FileAppender::setFileName(f);
-		computeRollOverTime();
+		computeLogAndRollOverTimes();
 	}
+
 
 	bool RollingFileAppender::computeRollOverBasedOnLastModified() const
 	{

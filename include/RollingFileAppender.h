@@ -48,8 +48,6 @@ namespace CuteLogger
 
 		RollingFileAppender(const QString& fileName = QString());
 
-		virtual void setFileName(const QString&);
-
 		DatePattern datePattern() const;
 		void setDatePattern(DatePattern datePattern);
 		void setDatePattern(const QString& datePattern);
@@ -62,13 +60,19 @@ namespace CuteLogger
 		bool computeRollOverBasedOnLastModified() const;
 		void setComputeRollOverBasedOnLastModified(bool val);
 
+		virtual void setFileName(const QString & f);
+
 	protected:
 		virtual void append(const QDateTime& timeStamp, Logger::LogLevel logLevel, const char* file, int line,
 			const char* function, const QString& category, const QString& message);
 
 	private:
-		void rollOver();
-		void computeRollOverTime();
+		void rollOverCheck();
+		QDateTime computeFileLogTime() const;
+		QDateTime computeCurrentLogTimeNow() const;
+		QDateTime computeRollOverDateTimeNext() const;
+		QDateTime computeRollOverDateTimeHelper(const QDateTime& dt, bool bNext) const;
+		void computeLogAndRollOverTimes();
 		void computeFrequency();
 		void removeOldFiles();
 		void setDatePatternString(const QString& datePatternString);
@@ -76,8 +80,10 @@ namespace CuteLogger
 		QString m_datePatternString;
 		DatePattern m_frequency;
 
+		QDateTime m_currentLogFileTime;
 		QDateTime m_rollOverTime;
-		QString m_rollOverSuffix;
+		bool m_forceRollovercheck;
+
 		int m_logFilesLimit;
 		mutable QMutex m_rollingMutex;
 

@@ -68,7 +68,8 @@ namespace CuteLogger
 	bool FileAppender::openFile()
 	{
 		bool isOpen = m_logFile.isOpen();
-		if (!isOpen)
+		QString fileName = m_logFile.fileName();
+		if ((!isOpen) && (!fileName.isEmpty()))
 		{
 			isOpen = m_logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text);
 			if (isOpen)

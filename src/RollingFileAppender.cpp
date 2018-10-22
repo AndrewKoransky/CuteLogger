@@ -250,25 +250,30 @@ namespace CuteLogger
 	{
 		Q_ASSERT_X(!m_datePatternString.isEmpty(), "DailyRollingFileAppender::rollOver()", "No active date pattern");
 
+		m_forceRollovercheck = false;
+
 		QString suffixCurrentLogFile = m_currentLogFileTime.toString(m_datePatternString);
 		QString suffixNow = computeCurrentLogTimeNow().toString(m_datePatternString);
-		if (suffixCurrentLogFile == suffixNow)
+		if (suffixCurrentLogFile == suffixNow) \
+		{
 			return;
+		}
 
 		closeFile();
 
 		QString targetFileName = fileName() + suffixCurrentLogFile;
-		QFile f(targetFileName);
-		if (f.exists() && !f.remove())
+		if (QFile::exists(targetFileName) && !QFile::remove(targetFileName))
+		{
 			return;
-		f.setFileName(fileName());
-		if (!f.rename(targetFileName))
+		}
+		if (!QFile::rename(fileName(), targetFileName))
+		{
 			return;
+		}
 
 		openFile();
 		removeOldFiles();
-
-		m_forceRollovercheck = false;
+		computeLogAndRollOverTimes();
 	}
 
 	void RollingFileAppender::setLogFilesLimit(int limit)

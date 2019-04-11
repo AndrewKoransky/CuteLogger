@@ -924,6 +924,7 @@ void Logger::write(const QDateTime& timeStamp, LogLevel logLevel, const char* fi
 {
   Q_D(Logger);
 
+  { // scope the mutex
   QMutexLocker locker(&d->loggerMutex);
 
   QString logCategory = QString::fromLatin1(category);
@@ -1003,6 +1004,7 @@ void Logger::write(const QDateTime& timeStamp, LogLevel logLevel, const char* fi
     std::cerr << qPrintable(result) << std::endl;
 #endif
   }
+  } // unlock mutex before calling abort
 
   if (logLevel == Logger::Fatal)
     abort();

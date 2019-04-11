@@ -36,8 +36,8 @@ namespace CuteLogger
 
 
 	ConsoleAppender::ConsoleAppender()
-		: AbstractStringAppender(),
-		m_ignoreEnvPattern(false)
+      : AbstractStringAppender()
+      , m_ignoreEnvPattern(false)
 	{
 		setFormat("[%{type:-7}] <%{function}> %{message}\n");
 	}
